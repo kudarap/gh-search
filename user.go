@@ -8,10 +8,15 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// ErrTooManyInput indicates the input reached maximum allowed usernames.
-var ErrTooManyInput = errors.New("too many username input")
+var (
+	// ErrTooManyInput indicates the input reached maximum allowed usernames.
+	ErrTooManyInput = errors.New("too many username input")
 
-const maxUsernameInput = 10
+	// ErrUserNotFound indicates user details can't be found from the source.
+	ErrUserNotFound = errors.New("user not found")
+)
+
+const MaxUsernameInput = 10
 
 // User represents a user details.
 type User struct {
@@ -39,40 +44,40 @@ type DefaultUserService struct {
 	source UserSource
 }
 
-// NewUserService return default user service.
-func NewUserService(source UserSource) *DefaultUserService {
-	return &DefaultUserService{source}
-}
-
 func (us *DefaultUserService) Users(ctx context.Context, usernames []string) ([]*User, error) {
-	inputLen := len(usernames)
-	if inputLen == 0 {
+	length := len(usernames)
+	if length == 0 {
 		return nil, nil
 	}
-	if inputLen > maxUsernameInput {
+	if length > MaxUsernameInput {
 		return nil, ErrTooManyInput
 	}
 
-	users := make([]*User, inputLen)
-	eg, ctx := errgroup.WithContext(ctx)
+	users := make([]*User, length)
+	errG, ctx := errgroup.WithContext(ctx)
 	for i, uname := range usernames {
 		if strings.TrimSpace(uname) == "" {
 			continue
 		}
 
 		i, uname := i, uname // https://golang.org/doc/faq#closures_and_goroutines
-		eg.Go(func() error {
+		errG.Go(func() error {
 			user, err := us.source.User(ctx, uname)
-			if err != nil {
+			if err != nil && !errors.Is(err, ErrUserNotFound) {
 				return err
 			}
 			users[i] = user
 			return nil
 		})
 	}
-	if err := eg.Wait(); err != nil {
+	if err := errG.Wait(); err != nil {
 		return nil, err
 	}
 
 	return users, nil
+}
+
+// NewUserService return default user service.
+func NewUserService(source UserSource) *DefaultUserService {
+	return &DefaultUserService{source}
 }

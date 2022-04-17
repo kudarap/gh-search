@@ -2,13 +2,15 @@ package ghsearch_test
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/kudarap/ghsearch"
 )
+
+var errUserSourceCall = errors.New("error getting user")
 
 func TestUserService_Users(t *testing.T) {
 	testcases := []struct {
@@ -93,8 +95,34 @@ func TestUserService_Users(t *testing.T) {
 			nil,
 			ghsearch.ErrTooManyInput,
 		},
-		// source some not found
-		// source some has error
+		{
+			"source some not found",
+			&mockedUserSource{
+				users: map[string]*ghsearch.User{
+					"jugg": {Name: "juggernaut"},
+					"dazz": {Name: "dazzle"},
+				},
+			},
+			[]string{"jugg", "spec", "dazz"},
+			[]*ghsearch.User{
+				{Name: "juggernaut"},
+				nil,
+				{Name: "dazzle"},
+			},
+			nil,
+		},
+		{
+			"source some has error",
+			&mockedUserSource{
+				users: map[string]*ghsearch.User{
+					"jugg": {Name: "juggernaut"},
+				},
+				err: errUserSourceCall,
+			},
+			[]string{"jugg", "dazz"},
+			nil,
+			errUserSourceCall,
+		},
 		// source timed out
 		// source failing
 		// repeating values
@@ -108,7 +136,7 @@ func TestUserService_Users(t *testing.T) {
 				t.Errorf("\ngot: \n\t%#v \nwant: \n\t%#v", got, tc.want)
 			}
 			if gotErr != tc.wantErr {
-				t.Errorf("err: %v, want: %v", gotErr, tc.wantErr)
+				t.Errorf("err: %#v, want: %#v", gotErr, tc.wantErr)
 			}
 		})
 	}
@@ -125,7 +153,11 @@ func (mus *mockedUserSource) User(ctx context.Context, username string) (*ghsear
 
 	u, found := mus.users[username]
 	if !found {
-		return nil, fmt.Errorf("user not found")
+		err := ghsearch.ErrUserNotFound
+		if mus.err != nil {
+			err = mus.err
+		}
+		return nil, err
 	}
 	return u, nil
 }
