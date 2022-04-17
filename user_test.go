@@ -1,9 +1,11 @@
 package ghsearch_test
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/kudarap/ghsearch"
 )
@@ -35,6 +37,7 @@ func TestUserService_Users(t *testing.T) {
 		{
 			"multi ok",
 			&mockedUserSource{
+				processDuration: time.Second,
 				users: map[string]*ghsearch.User{
 					"kudarap": {Name: "james"},
 					"spec":    {Name: "spectre"},
@@ -66,6 +69,8 @@ func TestUserService_Users(t *testing.T) {
 			[]string{"kudarap", " ", ""},
 			[]*ghsearch.User{
 				{Name: "james"},
+				nil,
+				nil,
 			},
 			nil,
 		},
@@ -96,8 +101,9 @@ func TestUserService_Users(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			ctx := context.Background()
 			svc := ghsearch.NewUserService(tc.source)
-			got, gotErr := svc.Users(tc.usernames)
+			got, gotErr := svc.Users(ctx, tc.usernames)
 			if !reflect.DeepEqual(got, tc.want) {
 				t.Errorf("\ngot: \n\t%#v \nwant: \n\t%#v", got, tc.want)
 			}
@@ -109,11 +115,14 @@ func TestUserService_Users(t *testing.T) {
 }
 
 type mockedUserSource struct {
-	users map[string]*ghsearch.User
-	err   error
+	users           map[string]*ghsearch.User
+	err             error
+	processDuration time.Duration
 }
 
-func (mus *mockedUserSource) User(username string) (*ghsearch.User, error) {
+func (mus *mockedUserSource) User(ctx context.Context, username string) (*ghsearch.User, error) {
+	time.Sleep(mus.processDuration)
+
 	u, found := mus.users[username]
 	if !found {
 		return nil, fmt.Errorf("user not found")
