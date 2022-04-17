@@ -3,8 +3,6 @@ package ghsearch
 import (
 	"context"
 	"errors"
-	"strings"
-
 	"golang.org/x/sync/errgroup"
 )
 
@@ -35,7 +33,9 @@ type UserService interface {
 
 // UserSource provides operation for retrieving user.
 type UserSource interface {
-	// User returns a user details.
+	// User returns a user details from an external source.
+	// Empty string username input will return immediately
+	// with a nil User and error.
 	User(ctx context.Context, username string) (*User, error)
 }
 
@@ -56,10 +56,6 @@ func (us *DefaultUserService) Users(ctx context.Context, usernames []string) ([]
 	users := make([]*User, length)
 	errG, ctx := errgroup.WithContext(ctx)
 	for i, uname := range usernames {
-		if strings.TrimSpace(uname) == "" {
-			continue
-		}
-
 		i, uname := i, uname // https://golang.org/doc/faq#closures_and_goroutines
 		errG.Go(func() error {
 			user, err := us.source.User(ctx, uname)
