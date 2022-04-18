@@ -14,7 +14,7 @@ import (
 	"github.com/kudarap/ghsearch/github"
 )
 
-func TestUser(t *testing.T) {
+func TestClient_User(t *testing.T) {
 	testcases := []struct {
 		name string
 		// deps
@@ -30,7 +30,7 @@ func TestUser(t *testing.T) {
 			httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				setDefaultTestHeaders(w.Header())
 				w.WriteHeader(http.StatusOK)
-				fmt.Fprintf(w, rawRespBody200)
+				fmt.Fprintf(w, rawRespBodyUser)
 			})),
 			"kudarap",
 			&ghsearch.User{
@@ -73,25 +73,15 @@ func TestUser(t *testing.T) {
 			nil,
 			ghsearch.ErrUserSourceTimeout,
 		},
-		//{
-		//"rate limit reached",
-		//httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//	resetsAt := strconv.FormatInt(time.Now().Unix(), 10)
-		//	w.Header().Add(github.HeaderRatelimitLimit, "60")
-		//	w.Header().Add(github.HeaderRatelimitRemaining, "0")
-		//	w.Header().Add(github.HeaderRatelimitReset, resetsAt)
-		//	w.Header().Add(github.HeaderRatelimitUsed, "60")
-		//	w.WriteHeader(http.StatusInternalServerError)
-		//	fmt.Fprintf(w, rawRespBody403Ratelimit)
-		//})),
-		//"kudarap",
-		//nil,
-		//ghsearch.ErrUserSourceFailed,
-		//},
 	}
 	for _, tc := range testcases {
 		ctx := context.Background()
-		gcl := github.NewClient(tc.testSrv.URL)
+		gcl, err := github.NewClient(tc.testSrv.URL, github.DefaultTimeout)
+		if err != nil {
+			t.Errorf("github.NewClient should not error: %s", err)
+			t.FailNow()
+		}
+
 		got, gotErr := gcl.User(ctx, tc.username)
 		if !reflect.DeepEqual(got, tc.want) {
 			t.Errorf("\ngot: \n\t%#v \nwant: \n\t%#v", got, tc.want)
@@ -104,13 +94,13 @@ func TestUser(t *testing.T) {
 
 func setDefaultTestHeaders(h http.Header) {
 	resetsAt := strconv.FormatInt(time.Now().Add(time.Minute).Unix(), 10)
-	h.Add(github.HeaderRatelimitReset, resetsAt)
-	h.Add(github.HeaderRatelimitLimit, "60")
-	h.Add(github.HeaderRatelimitRemaining, "59")
-	h.Add(github.HeaderRatelimitUsed, "1")
+	h.Add(github.HeaderRateLimitReset, resetsAt)
+	h.Add(github.HeaderRateLimitLimit, "60")
+	h.Add(github.HeaderRateLimitRemaining, "59")
+	h.Add(github.HeaderRateLimitUsed, "1")
 }
 
-const rawRespBody200 = `{
+const rawRespBodyUser = `{
   "login": "kudarap",
   "id": 3943674,
   "node_id": "MDQ6VXNlcjM5NDM2NzQ=",
@@ -145,7 +135,7 @@ const rawRespBody200 = `{
   "updated_at": "2022-04-01T14:14:04Z"
 }`
 
-const rawRespBody403Ratelimit = `{
+const rawRespBody403RateLimit = `{
   "message": "Rate Limit Exceeded",
 }`
 
