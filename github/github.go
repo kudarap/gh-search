@@ -47,13 +47,6 @@ func (l Ratelimit) Reached() bool {
 	return l.Remaining == 0
 }
 
-func NewClient(url string) *Client {
-	var c Client
-	c.baseURL = url
-	c.httpClient = &http.Client{Timeout: defaultTimeout}
-	return &c
-}
-
 func (c *Client) User(ctx context.Context, username string) (*ghsearch.User, error) {
 	// check rate limit
 	// request once
@@ -93,6 +86,13 @@ func (c *Client) updateRatelimit(h http.Header) {
 	c.Ratelimit.Remaining, _ = strconv.Atoi(h.Get(HeaderRatelimitRemaining))
 	ts, _ := strconv.ParseInt(h.Get(HeaderRatelimitReset), 10, 64)
 	c.Ratelimit.ResetsAt = time.Unix(ts, 0)
+}
+
+func NewClient(url string) *Client {
+	var c Client
+	c.baseURL = url
+	c.httpClient = &http.Client{Timeout: defaultTimeout}
+	return &c
 }
 
 func responseEncoder(resp *http.Response, out interface{}) error {

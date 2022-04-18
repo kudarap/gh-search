@@ -73,23 +73,21 @@ func TestUser(t *testing.T) {
 			nil,
 			ghsearch.ErrUserSourceTimeout,
 		},
-		{
-			"rate limit reached",
-			httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				resetsAt := strconv.FormatInt(time.Now().Unix(), 10)
-				w.Header().Add(github.HeaderRatelimitLimit, "60")
-				w.Header().Add(github.HeaderRatelimitRemaining, "0")
-				w.Header().Add(github.HeaderRatelimitReset, resetsAt)
-				w.Header().Add(github.HeaderRatelimitUsed, "60")
-				w.WriteHeader(http.StatusInternalServerError)
-				fmt.Fprintf(w, rawRespBody403Ratelimit)
-			})),
-			"kudarap",
-			nil,
-			ghsearch.ErrUserSourceFailed,
-		},
-		// error response
-		// failing cache
+		//{
+		//"rate limit reached",
+		//httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//	resetsAt := strconv.FormatInt(time.Now().Unix(), 10)
+		//	w.Header().Add(github.HeaderRatelimitLimit, "60")
+		//	w.Header().Add(github.HeaderRatelimitRemaining, "0")
+		//	w.Header().Add(github.HeaderRatelimitReset, resetsAt)
+		//	w.Header().Add(github.HeaderRatelimitUsed, "60")
+		//	w.WriteHeader(http.StatusInternalServerError)
+		//	fmt.Fprintf(w, rawRespBody403Ratelimit)
+		//})),
+		//"kudarap",
+		//nil,
+		//ghsearch.ErrUserSourceFailed,
+		//},
 	}
 	for _, tc := range testcases {
 		ctx := context.Background()
