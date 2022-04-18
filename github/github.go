@@ -9,16 +9,14 @@ import (
 	"time"
 )
 
-var (
-	ErrReqFailed = errors.New("github: request failed")
-)
+var ErrReqFailed = errors.New("github: request failed")
 
 const (
 	APIBaseURL     = "https://api.github.com"
 	DefaultTimeout = 2 * time.Second
 )
 
-// RateLimit response headers.
+// RateLimit response header keys.
 const (
 	HeaderRateLimitLimit     = "x-ratelimit-limit"
 	HeaderRateLimitRemaining = "x-ratelimit-remaining"

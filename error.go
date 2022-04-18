@@ -16,6 +16,7 @@ func (e SourceError) Error() string {
 	return e.Error()
 }
 
+// NewSourceError returns an error a new SourceError contains error details.
 func NewSourceError(e error) error {
 	if e == nil {
 		return nil

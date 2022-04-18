@@ -123,9 +123,6 @@ func TestUserService_Users(t *testing.T) {
 			nil,
 			ghsearch.NewSourceError(errUserSourceCall),
 		},
-		// source timed out
-		// source failing
-		// repeating values
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -135,7 +132,7 @@ func TestUserService_Users(t *testing.T) {
 			if !reflect.DeepEqual(got, tc.want) {
 				t.Errorf("\ngot: \n\t%#v \nwant: \n\t%#v", got, tc.want)
 			}
-			if gotErr != tc.wantErr {
+			if gotErr != tc.wantErr && !reflect.DeepEqual(gotErr, tc.wantErr) {
 				t.Errorf("err: %#v, want: %#v", gotErr, tc.wantErr)
 			}
 		})
