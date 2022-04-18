@@ -2,13 +2,23 @@ package ghsearch
 
 import "errors"
 
-var ErrUserSourceFailed = errors.New("user source failure")
-var ErrUserSourceTimeout = errors.New("user source timed out")
+var (
+	ErrUserSourceFailed  = errors.New("user source failure")
+	ErrUserSourceTimeout = errors.New("user source timed out")
+)
 
+// SourceError represents an error from a source.
 type SourceError struct {
-	ErrString string
+	Err error
 }
 
 func (e SourceError) Error() string {
-	return e.ErrString
+	return e.Error()
+}
+
+func NewSourceError(e error) error {
+	if e == nil {
+		return nil
+	}
+	return &SourceError{e}
 }

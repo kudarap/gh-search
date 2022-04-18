@@ -3,6 +3,7 @@ package ghsearch
 import (
 	"context"
 	"errors"
+
 	"golang.org/x/sync/errgroup"
 )
 
@@ -64,7 +65,7 @@ func (us *DefaultUserService) Users(ctx context.Context, usernames []string) ([]
 		errG.Go(func() error {
 			user, err := us.source.User(ctx, uname)
 			if err != nil && !errors.Is(err, ErrUserNotFound) {
-				return err
+				return NewSourceError(err)
 			}
 			users[i] = user
 			return nil

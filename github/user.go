@@ -28,7 +28,7 @@ func (c *Client) User(ctx context.Context, username string) (*ghsearch.User, err
 		if os.IsTimeout(err) {
 			return nil, ghsearch.ErrUserSourceTimeout
 		}
-		return nil, ghsearch.ErrUserSourceFailed
+		return nil, err
 	}
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, ghsearch.ErrUserNotFound

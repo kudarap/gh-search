@@ -28,11 +28,11 @@ func TestClient_User(t *testing.T) {
 	}{
 		{
 			"ok",
-			httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			newTestServer(func(w http.ResponseWriter, r *http.Request) {
 				setDefaultTestHeaders(w.Header())
 				w.WriteHeader(http.StatusOK)
 				fmt.Fprintf(w, rawRespBodyUser)
-			})),
+			}),
 			0,
 			"kudarap",
 			&ghsearch.User{
@@ -46,11 +46,11 @@ func TestClient_User(t *testing.T) {
 		},
 		{
 			"not found",
-			httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			newTestServer(func(w http.ResponseWriter, r *http.Request) {
 				setDefaultTestHeaders(w.Header())
 				w.WriteHeader(http.StatusNotFound)
 				fmt.Fprintf(w, rawRespBody404)
-			})),
+			}),
 			0,
 			"kudarap",
 			nil,
@@ -58,11 +58,11 @@ func TestClient_User(t *testing.T) {
 		},
 		{
 			"internal error",
-			httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			newTestServer(func(w http.ResponseWriter, r *http.Request) {
 				setDefaultTestHeaders(w.Header())
 				w.WriteHeader(http.StatusInternalServerError)
 				fmt.Fprintf(w, rawRespBody500)
-			})),
+			}),
 			0,
 			"kudarap",
 			nil,
@@ -70,9 +70,9 @@ func TestClient_User(t *testing.T) {
 		},
 		{
 			"timed out",
-			httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			newTestServer(func(w http.ResponseWriter, r *http.Request) {
 				time.Sleep(time.Second)
-			})),
+			}),
 			time.Second / 2,
 			"kudarap",
 			nil,

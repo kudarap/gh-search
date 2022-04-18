@@ -121,7 +121,7 @@ func TestUserService_Users(t *testing.T) {
 			},
 			[]string{"jugg", "dazz"},
 			nil,
-			errUserSourceCall,
+			ghsearch.NewSourceError(errUserSourceCall),
 		},
 		// source timed out
 		// source failing

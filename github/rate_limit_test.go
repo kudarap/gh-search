@@ -63,10 +63,6 @@ func TestClient_RequestRateLimit(t *testing.T) {
 	}
 }
 
-func newTestServer(fn func(w http.ResponseWriter, r *http.Request)) *httptest.Server {
-	return httptest.NewServer(http.HandlerFunc(fn))
-}
-
 const rawRespBodyRateLimit = `{
   "resources": {
     "core": {

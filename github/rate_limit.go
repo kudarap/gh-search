@@ -70,6 +70,7 @@ type RateLimitResponse struct {
 	}
 }
 
+// RateLimit returns RateLimit details from a response.
 func (r RateLimitResponse) RateLimit() *RateLimit {
 	c := r.Resources.Core
 	return &RateLimit{
