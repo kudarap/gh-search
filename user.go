@@ -14,15 +14,15 @@ var (
 	ErrUserNotFound = errors.New("user not found")
 )
 
-const MaxUsernameInput = 10
+const MaxUsersInputLength = 10
 
 // User represents a user details.
 type User struct {
-	Name        string
-	Login       string
-	Company     string
-	Followers   int
-	PublicRepos int
+	Name        string `json:"name"`
+	Login       string `json:"login"`
+	Company     string `json:"company"`
+	Followers   int    `json:"followers"`
+	PublicRepos int    `json:"public_repos"`
 }
 
 // UserService provides access to user service.
@@ -49,11 +49,15 @@ func (us *DefaultUserService) Users(ctx context.Context, usernames []string) ([]
 	if length == 0 {
 		return nil, nil
 	}
-	if length > MaxUsernameInput {
+	if length > MaxUsersInputLength {
 		return nil, ErrTooManyInput
 	}
 
 	users := make([]*User, length)
+
+	// Getting user details concurrently, since we already know the length of the input
+	// its safe to process this way. when we have unknown number of input it might be
+	// better to use a worker or semaphore.
 	errG, ctx := errgroup.WithContext(ctx)
 	for i, uname := range usernames {
 		i, uname := i, uname // https://golang.org/doc/faq#closures_and_goroutines
