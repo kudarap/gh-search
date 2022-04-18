@@ -17,13 +17,8 @@ func (c *Client) User(ctx context.Context, username string) (*ghsearch.User, err
 	// TODO: check rate limit
 	// TODO: request once
 
-	url := fmt.Sprintf("%s/users/%s", c.baseURL, username)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.httpClient.Do(req)
+	url := fmt.Sprintf("%s/%s", APIUserEndpoint, username)
+	resp, err := c.baseRequests(ctx, url)
 	if err != nil {
 		if os.IsTimeout(err) {
 			return nil, ghsearch.ErrUserSourceTimeout

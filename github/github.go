@@ -1,8 +1,10 @@
 package github
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"golang.org/x/sync/singleflight"
 	"io/ioutil"
 	"net/http"
@@ -12,7 +14,10 @@ import (
 var ErrReqFailed = errors.New("github: request failed")
 
 const (
-	APIBaseURL     = "https://api.github.com"
+	APIBaseURL           = "https://api.github.com"
+	APIUserEndpoint      = "/user"
+	APIRateLimitEndpoint = "/rate_limit"
+
 	DefaultTimeout = 2 * time.Second
 )
 
@@ -26,7 +31,8 @@ const (
 
 // Client represents Github's client service.
 type Client struct {
-	baseURL string
+	baseURL     string
+	accessToken string
 
 	// custom httpClient for controlled request and timeouts.
 	httpClient *http.Client
@@ -35,6 +41,20 @@ type Client struct {
 	requestGroup singleflight.Group
 
 	RateLimit RateLimit
+}
+
+// baseRequests sends GET requests and uses access token when available to increase rate limits.
+func (c *Client) baseRequests(ctx context.Context, path string) (*http.Response, error) {
+	url := fmt.Sprintf("%s%s", c.baseURL, path)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	if c.accessToken != "" {
+		req.Header.Set("Authorization", fmt.Sprintf("token %s", c.accessToken))
+	}
+
+	return c.httpClient.Do(req)
 }
 
 // NewClient initializes GitHub client and setup rate limits.

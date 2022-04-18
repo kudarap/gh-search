@@ -1,8 +1,8 @@
 package github
 
 import (
+	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -22,13 +22,7 @@ func (l RateLimit) reached() bool {
 
 // RequestRateLimit returns current core rate limit.
 func (c *Client) RequestRateLimit() (*RateLimit, error) {
-	url := fmt.Sprintf("%s/rate_limit", c.baseURL)
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.baseRequests(context.Background(), APIRateLimitEndpoint)
 	if err != nil {
 		return nil, err
 	}
