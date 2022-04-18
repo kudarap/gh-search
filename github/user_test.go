@@ -19,6 +19,7 @@ func TestClient_User(t *testing.T) {
 		name string
 		// deps
 		testSrv *httptest.Server
+		timeout time.Duration
 		// args
 		username string
 		// returns
@@ -32,6 +33,7 @@ func TestClient_User(t *testing.T) {
 				w.WriteHeader(http.StatusOK)
 				fmt.Fprintf(w, rawRespBodyUser)
 			})),
+			0,
 			"kudarap",
 			&ghsearch.User{
 				Name:        "",
@@ -49,6 +51,7 @@ func TestClient_User(t *testing.T) {
 				w.WriteHeader(http.StatusNotFound)
 				fmt.Fprintf(w, rawRespBody404)
 			})),
+			0,
 			"kudarap",
 			nil,
 			ghsearch.ErrUserNotFound,
@@ -60,6 +63,7 @@ func TestClient_User(t *testing.T) {
 				w.WriteHeader(http.StatusInternalServerError)
 				fmt.Fprintf(w, rawRespBody500)
 			})),
+			0,
 			"kudarap",
 			nil,
 			ghsearch.ErrUserSourceFailed,
@@ -67,8 +71,9 @@ func TestClient_User(t *testing.T) {
 		{
 			"timed out",
 			httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				time.Sleep(time.Second * 3)
+				time.Sleep(time.Second)
 			})),
+			time.Second / 2,
 			"kudarap",
 			nil,
 			ghsearch.ErrUserSourceTimeout,
@@ -76,7 +81,7 @@ func TestClient_User(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		ctx := context.Background()
-		gcl, err := github.NewClient(tc.testSrv.URL, github.DefaultTimeout)
+		gcl, err := github.NewClient(tc.testSrv.URL, tc.timeout)
 		if err != nil {
 			t.Errorf("github.NewClient should not error: %s", err)
 			t.FailNow()

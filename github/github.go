@@ -41,7 +41,7 @@ type Client struct {
 
 // NewClient initializes GitHub client and setup rate limits.
 func NewClient(url string, timeout time.Duration) (*Client, error) {
-	if timeout == 0 {
+	if timeout <= 0 {
 		timeout = DefaultTimeout
 	}
 
