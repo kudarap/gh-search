@@ -18,8 +18,20 @@ func (c *Client) User(ctx context.Context, username string) (*ghsearch.User, err
 		return nil, err
 	}
 
-	// TODO: request once
+	v, err, _ := c.requestGroup.Do("username", func() (interface{}, error) {
+		// TODO invalidate cache
+		return c.fetchUser(ctx, username)
+	})
+	if err != nil {
+		return nil, err
+	}
 
+	ur := v.(*UserResponse)
+	u := ghsearch.User(*ur)
+	return &u, nil
+}
+
+func (c *Client) fetchUser(ctx context.Context, username string) (*UserResponse, error) {
 	url := fmt.Sprintf("%s/%s", APIUserEndpoint, username)
 	resp, err := c.baseRequests(ctx, url)
 	if err != nil {
@@ -42,6 +54,5 @@ func (c *Client) User(ctx context.Context, username string) (*ghsearch.User, err
 	if err = decodeBody(resp, &ur); err != nil {
 		return nil, err
 	}
-	u := ghsearch.User(ur)
-	return &u, nil
+	return &ur, err
 }
