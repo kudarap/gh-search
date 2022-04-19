@@ -53,12 +53,10 @@ func (app *Application) setup() error {
 	userService := ghsearch.NewUserService(userSourceCache)
 
 	restHandler := http.NewRestHandler(userService)
-	srv := http.NewServer(app.conf.Addr, restHandler, app.log)
-	if err = srv.Run(); err != nil {
-		return err
+	app.server = http.NewServer(app.conf.Addr, restHandler, app.log)
+	app.closeFn = func() error {
+		return redisClient.Close()
 	}
-
-	app.closeFn = func() error { return redisClient.Close() }
 	return nil
 }
 
@@ -73,9 +71,7 @@ func (app *Application) close() {
 }
 
 func newApp() *Application {
-	var a Application
-	a.log = logging.New()
-	return &a
+	return &Application{log: logging.New()}
 }
 
 type Config struct {
