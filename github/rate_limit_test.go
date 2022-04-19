@@ -48,12 +48,7 @@ func TestClient_RequestRateLimit(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			gh, err := github.NewClient(tc.testSrv.URL, time.Second)
-			if err != nil {
-				t.Errorf("github.NewClient should not error: %s", err)
-				t.FailNow()
-			}
-
+			gh := github.NewCustomClient(tc.testSrv.URL, "", time.Second)
 			got, gotErr := gh.RequestRateLimit()
 			if !reflect.DeepEqual(got, tc.want) {
 				t.Errorf("\ngot: \n\t%#v \nwant: \n\t%#v", got, tc.want)
@@ -141,20 +136,11 @@ func TestClient_User_RateLimitCheck(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			client, err := github.NewClient(tc.testSrv.URL, github.DefaultTimeout)
-			if err != nil {
-				t.Errorf("github.NewClient should not error: %s", err)
-				t.FailNow()
-			}
+			client := github.NewCustomClient(tc.testSrv.URL, "", 0)
 			client.RateLimit = tc.current
 
 			ctx := context.Background()
 			_, gotErr := client.User(ctx, "kudarap")
-			if err != nil {
-				t.Errorf("github.NewClient should not error: %s", err)
-				t.FailNow()
-			}
-
 			if !reflect.DeepEqual(client.RateLimit, tc.want) {
 				t.Errorf("\ngot: \n\t%#v \nwant: \n\t%#v", client.RateLimit, tc.want)
 			}

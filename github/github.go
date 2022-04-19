@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"golang.org/x/sync/singleflight"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
+
+	"golang.org/x/sync/singleflight"
 )
 
 var (
@@ -61,15 +63,28 @@ func (c *Client) baseRequests(ctx context.Context, path string) (*http.Response,
 }
 
 // NewClient initializes GitHub client and setup rate limits.
-func NewClient(url string, timeout time.Duration) (*Client, error) {
+func NewClient(accessToken string) (*Client, error) {
+	if strings.TrimSpace(accessToken) == "" {
+		return nil, errors.New("access token required")
+	}
+
+	c := NewCustomClient(APIBaseURL, accessToken, DefaultTimeout)
+	if err := c.acquireRateLimit(); err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
+func NewCustomClient(url, accessToken string, timeout time.Duration) *Client {
 	if timeout <= 0 {
 		timeout = DefaultTimeout
 	}
 
 	var c Client
 	c.baseURL = url
+	c.accessToken = accessToken
 	c.httpClient = &http.Client{Timeout: timeout}
-	return &c, nil
+	return &c
 }
 
 func decodeBody(r *http.Response, out interface{}) error {

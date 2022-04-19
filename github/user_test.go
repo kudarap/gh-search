@@ -81,12 +81,7 @@ func TestClient_User(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		ctx := context.Background()
-		gcl, err := github.NewClient(tc.testSrv.URL, tc.timeout)
-		if err != nil {
-			t.Errorf("github.NewClient should not error: %s", err)
-			t.FailNow()
-		}
-
+		gcl := github.NewCustomClient(tc.testSrv.URL, "", tc.timeout)
 		gcl.RateLimit = github.RateLimit{
 			Limit:     60,
 			Remaining: 0,
@@ -161,3 +156,7 @@ const rawRespBody404 = `{
 const rawRespBody500 = `{
   "message": "Internal Error"
 }`
+
+func newTestServer(fn func(w http.ResponseWriter, r *http.Request)) *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(fn))
+}

@@ -5,12 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/kudarap/ghsearch"
 )
-
-const requestGroupKeyExpr = time.Second * 2
 
 // User returns Github user details by username.
 func (c *Client) User(ctx context.Context, username string) (*ghsearch.User, error) {
@@ -20,11 +17,6 @@ func (c *Client) User(ctx context.Context, username string) (*ghsearch.User, err
 
 	// avoid duplicate inflight requests.
 	v, err, _ := c.requestGroup.Do(username, func() (interface{}, error) {
-		// invalidates share result after requestGroupKeyExpr.
-		go func() {
-			time.Sleep(requestGroupKeyExpr)
-			c.requestGroup.Forget(username)
-		}()
 		return c.fetchUser(ctx, username)
 	})
 	if err != nil {
