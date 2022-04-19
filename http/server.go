@@ -15,13 +15,17 @@ import (
 const (
 	shutdownTimeout  = 10 * time.Second
 	readWriteTimeout = 15 * time.Second
+
+	defaultAddr = ":8080"
 )
 
+// Server represents http server.
 type Server struct {
 	srv    *http.Server
 	logger logger
 }
 
+// Run starts serving and listening http server with graceful shutdown.
 func (s *Server) Run() error {
 	s.logger.Println("http server: running on", s.srv.Addr)
 	return s.gracefulShutdown(s.srv, shutdownTimeout)
@@ -53,8 +57,7 @@ func (s *Server) gracefulShutdown(srv *http.Server, timeout time.Duration) error
 	return <-done
 }
 
-const defaultAddr = ":8080"
-
+// NewServer creates new instance of http server.
 func NewServer(addr string, rest *RestHandler, l logger) *Server {
 	if addr == "" {
 		addr = defaultAddr

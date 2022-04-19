@@ -10,10 +10,12 @@ import (
 
 const contentType = "application/json; charset=utf-8"
 
+// RestHandler represents http rest handler.
 type RestHandler struct {
 	userSvc ghsearch.UserService
 }
 
+// GETUsers handles users search requests.
 func (h *RestHandler) GETUsers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -34,6 +36,7 @@ func (h *RestHandler) GETUsers() http.HandlerFunc {
 	}
 }
 
+// NewRestHandler creates new http rest handler.
 func NewRestHandler(us ghsearch.UserService) *RestHandler {
 	return &RestHandler{us}
 }

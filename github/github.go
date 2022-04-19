@@ -34,7 +34,7 @@ const (
 	HeaderRateLimitUsed      = "x-ratelimit-used"
 )
 
-// Client represents Github's client service.
+// Client represents GitHub client service.
 type Client struct {
 	baseURL     string
 	accessToken string
@@ -76,6 +76,7 @@ func NewClient(accessToken string) (*Client, error) {
 	return c, nil
 }
 
+// NewCustomClient creates new GitHub client.
 func NewCustomClient(url, accessToken string, timeout time.Duration) *Client {
 	if timeout <= 0 {
 		timeout = DefaultTimeout

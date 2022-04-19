@@ -15,6 +15,7 @@ type UserSourceCache struct {
 	userSrc ghsearch.UserSource
 }
 
+// User returns user details from cache when available.
 func (c *UserSourceCache) User(ctx context.Context, username string) (*ghsearch.User, error) {
 	// Check for cached user value.
 	cached := &ghsearch.User{}
