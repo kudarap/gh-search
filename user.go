@@ -3,6 +3,7 @@ package ghsearch
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -46,6 +47,7 @@ type DefaultUserService struct {
 }
 
 func (us *DefaultUserService) Users(ctx context.Context, usernames []string) ([]*User, error) {
+	usernames = cleanUsernames(usernames)
 	length := len(usernames)
 	if length == 0 {
 		return nil, nil
@@ -81,4 +83,12 @@ func (us *DefaultUserService) Users(ctx context.Context, usernames []string) ([]
 // NewUserService return default user service.
 func NewUserService(source UserSource) *DefaultUserService {
 	return &DefaultUserService{source}
+}
+
+func cleanUsernames(usernames []string) []string {
+	uu := make([]string, len(usernames))
+	for i, u := range usernames {
+		uu[i] = strings.TrimSpace(u)
+	}
+	return uu
 }

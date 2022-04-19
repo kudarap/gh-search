@@ -14,11 +14,6 @@ type UserSourceCache struct {
 	userSrc ghsearch.UserSource
 }
 
-// NewUserSource creates new instance of user source with cache.
-func NewUserSource(c *Client, us ghsearch.UserSource) *UserSourceCache {
-	return &UserSourceCache{c, us}
-}
-
 func (c *UserSourceCache) User(ctx context.Context, username string) (*ghsearch.User, error) {
 	// Check for cached user value.
 	cached := &ghsearch.User{}
@@ -39,4 +34,9 @@ func (c *UserSourceCache) User(ctx context.Context, username string) (*ghsearch.
 		return nil, err
 	}
 	return user, nil
+}
+
+// NewUserSource creates new instance of user source with cache.
+func NewUserSource(c *Client, us ghsearch.UserSource) *UserSourceCache {
+	return &UserSourceCache{c, us}
 }
