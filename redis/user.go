@@ -2,8 +2,9 @@ package redis
 
 import (
 	"context"
-	"github.com/kudarap/ghsearch"
 	"time"
+
+	"github.com/kudarap/ghsearch"
 )
 
 const userCacheExpr = time.Minute * 2

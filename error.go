@@ -3,7 +3,10 @@ package ghsearch
 import "errors"
 
 var (
-	ErrUserSourceFailed  = errors.New("user source failure")
+	// ErrUserSourceFailed indicates user source process failed.
+	ErrUserSourceFailed = errors.New("user source failure")
+
+	// ErrUserSourceTimeout indicates user source process has timed out.
 	ErrUserSourceTimeout = errors.New("user source timed out")
 )
 
