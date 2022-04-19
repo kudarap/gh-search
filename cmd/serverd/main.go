@@ -21,6 +21,7 @@ func main() {
 
 	if err := app.setup(); err != nil {
 		app.log.Errorf("could not setup app: %s", err)
+		return
 	}
 	defer app.close()
 
