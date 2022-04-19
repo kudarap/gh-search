@@ -16,8 +16,16 @@ type RateLimit struct {
 	ResetsAt  time.Time
 }
 
-func (l RateLimit) reached() bool {
-	return l.Remaining == 0
+// check determines if we haven't reached the rate limit
+// and also checks if it's good to send again base on reset time.
+func (l RateLimit) check() error {
+	if l.ResetsAt.Before(time.Now()) {
+		return nil
+	}
+	if l.Remaining == 0 {
+		return ErrRateLimitHit
+	}
+	return nil
 }
 
 // RequestRateLimit returns current core rate limit.

@@ -1,7 +1,9 @@
 package github_test
 
 import (
+	"context"
 	"fmt"
+	"github.com/kudarap/ghsearch"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -61,6 +63,99 @@ func TestClient_RequestRateLimit(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestClient_User_RateLimitHit(t *testing.T) {
+	testcases := []struct {
+		name string
+		// deps
+		testSrv   *httptest.Server
+		rateLimit github.RateLimit
+		// returns
+		want    *ghsearch.User
+		wantErr error
+	}{
+		{
+			"rate limit ok",
+			newTestServer(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprintf(w, rawRespBodyUser)
+			}),
+			github.RateLimit{
+				Limit:     60,
+				Remaining: 60,
+				Used:      0,
+				ResetsAt:  time.Now().Add(time.Minute),
+			},
+			&ghsearch.User{
+				Name:        "",
+				Login:       "kudarap",
+				Company:     "Openovate Labs",
+				Followers:   5,
+				PublicRepos: 38,
+			},
+			nil,
+		},
+		{
+			"rate limit reached",
+			newTestServer(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusForbidden)
+				fmt.Fprintf(w, rawRespBody403RateLimit)
+			}),
+			github.RateLimit{
+				Limit:     0,
+				Remaining: 0,
+				Used:      0,
+				ResetsAt:  time.Now().Add(time.Minute),
+			},
+			nil,
+			github.ErrRateLimitHit,
+		},
+		{
+			"rate limit resets",
+			newTestServer(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprintf(w, rawRespBodyUser)
+			}),
+			github.RateLimit{
+				Limit:     0,
+				Remaining: 0,
+				Used:      0,
+				ResetsAt:  time.Now().Add(-time.Minute),
+			},
+			&ghsearch.User{
+				Name:        "",
+				Login:       "kudarap",
+				Company:     "Openovate Labs",
+				Followers:   5,
+				PublicRepos: 38,
+			},
+			nil,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			client, err := github.NewClient(tc.testSrv.URL, github.DefaultTimeout)
+			if err != nil {
+				t.Errorf("github.NewClient should not error: %s", err)
+				t.FailNow()
+			}
+			client.RateLimit = tc.rateLimit
+
+			ctx := context.Background()
+			got, gotErr := client.User(ctx, "kudarap")
+			if !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("\ngot: \n\t%#v \nwant: \n\t%#v", got, tc.want)
+			}
+			if gotErr != tc.wantErr {
+				t.Errorf("err: %#v, want: %#v", gotErr, tc.wantErr)
+			}
+		})
+	}
+}
+
+func TestClient_User_InFlight(t *testing.T) {
+
 }
 
 const rawRespBodyRateLimit = `{

@@ -14,7 +14,10 @@ type UserResponse ghsearch.User
 
 // User returns Github user details by username.
 func (c *Client) User(ctx context.Context, username string) (*ghsearch.User, error) {
-	// TODO: check rate limit
+	if err := c.RateLimit.check(); err != nil {
+		return nil, err
+	}
+
 	// TODO: request once
 
 	url := fmt.Sprintf("%s/%s", APIUserEndpoint, username)

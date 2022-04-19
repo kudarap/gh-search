@@ -11,7 +11,10 @@ import (
 	"time"
 )
 
-var ErrReqFailed = errors.New("github: request failed")
+var (
+	ErrReqFailed    = errors.New("github: request failed")
+	ErrRateLimitHit = errors.New("github: rate limit reached")
+)
 
 const (
 	APIBaseURL           = "https://api.github.com"
