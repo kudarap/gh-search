@@ -19,7 +19,7 @@ type RateLimit struct {
 // check determines if we haven't reached the rate limit
 // and also checks if it's good to send again base on reset time.
 func (l RateLimit) check() error {
-	if l.ResetsAt.Before(time.Now()) {
+	if !l.ResetsAt.IsZero() && l.ResetsAt.Before(time.Now()) {
 		return nil
 	}
 	if l.Remaining == 0 {
@@ -87,8 +87,11 @@ func rateLimitFrom(h http.Header) RateLimit {
 	var rl RateLimit
 	rl.Limit, _ = strconv.Atoi(h.Get(HeaderRateLimitLimit))
 	rl.Remaining, _ = strconv.Atoi(h.Get(HeaderRateLimitRemaining))
-	rl.Remaining, _ = strconv.Atoi(h.Get(HeaderRateLimitRemaining))
-	ts, _ := strconv.ParseInt(h.Get(HeaderRateLimitReset), 10, 64)
-	rl.ResetsAt = time.Unix(ts, 0)
+	rl.Used, _ = strconv.Atoi(h.Get(HeaderRateLimitUsed))
+	resetsAt, _ := strconv.Atoi(h.Get(HeaderRateLimitReset))
+	if resetsAt != 0 {
+		ts, _ := strconv.ParseInt(h.Get(HeaderRateLimitReset), 10, 64)
+		rl.ResetsAt = time.Unix(ts, 0)
+	}
 	return rl
 }

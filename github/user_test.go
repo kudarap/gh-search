@@ -87,6 +87,12 @@ func TestClient_User(t *testing.T) {
 			t.FailNow()
 		}
 
+		gcl.RateLimit = github.RateLimit{
+			Limit:     60,
+			Remaining: 0,
+			Used:      0,
+			ResetsAt:  time.Now(),
+		}
 		got, gotErr := gcl.User(ctx, tc.username)
 		if !reflect.DeepEqual(got, tc.want) {
 			t.Errorf("\ngot: \n\t%#v \nwant: \n\t%#v", got, tc.want)
@@ -97,12 +103,15 @@ func TestClient_User(t *testing.T) {
 	}
 }
 
+func TestClient_User_SingleFlight(t *testing.T) {
+
+}
+
 func setDefaultTestHeaders(h http.Header) {
-	resetsAt := strconv.FormatInt(time.Now().Add(time.Minute).Unix(), 10)
-	h.Add(github.HeaderRateLimitReset, resetsAt)
 	h.Add(github.HeaderRateLimitLimit, "60")
 	h.Add(github.HeaderRateLimitRemaining, "59")
 	h.Add(github.HeaderRateLimitUsed, "1")
+	h.Add(github.HeaderRateLimitReset, strconv.FormatInt(time.Now().Add(time.Minute).Unix(), 10))
 }
 
 const rawRespBodyUser = `{
