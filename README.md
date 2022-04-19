@@ -27,10 +27,10 @@ Since we are dealing with external resource, its important to know how we can wo
 
 
 ## Architecture
-- Concurrent user data retrieval
-- Internal rate limit check - prefetched rate limits on init
-- Request grouping to prevent duplicate in-flight requests
-- Caching user data using redis to share between service instances when scaling
+- concurrent user data retrieval
+- internal rate limit check - prefetched rate limits on init
+- request grouping to prevent duplicate in-flight requests
+- caching user data using redis to share between service instances when scaling
 
 
 ## Future Plan
@@ -43,12 +43,4 @@ Since we are dealing with external resource, its important to know how we can wo
 
 
 ## Proud Code
-https://bitbucket.org/javinc/tasio or https://github.com/kudarap/sbox
-
-
-## Profile
-_Link to your resume or public profile._
-
-
-## Test Deployment
-_Link to the hosted application where applicable._
+https://bitbucket.org/javinc/tasio
