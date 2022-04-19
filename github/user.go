@@ -35,15 +35,13 @@ func (c *Client) fetchUser(ctx context.Context, username string) (*ghsearch.User
 		}
 		return nil, err
 	}
+	c.RateLimit = rateLimitFrom(resp.Header)
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, ghsearch.ErrUserNotFound
 	}
 	if responseHasError(resp) {
 		return nil, ghsearch.ErrUserSourceFailed
 	}
-
-	// TODO: not concurrent safe
-	c.RateLimit = rateLimitFrom(resp.Header)
 
 	var u ghsearch.User
 	if err = decodeBody(resp, &u); err != nil {

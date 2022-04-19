@@ -45,7 +45,8 @@ type Client struct {
 	// requestGroup to prevent duplicate in-flight requests
 	requestGroup singleflight.Group
 
-	RateLimit RateLimit
+	RateLimit   RateLimit
+	rateLimitCh chan RateLimit
 }
 
 // getRequest sends GET request and uses access token when available to increase rate limits.
