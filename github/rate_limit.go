@@ -30,7 +30,7 @@ func (l RateLimit) check() error {
 
 // RequestRateLimit returns current core rate limit.
 func (c *Client) RequestRateLimit() (*RateLimit, error) {
-	resp, err := c.baseRequests(context.Background(), APIRateLimitEndpoint)
+	resp, err := c.getRequest(context.Background(), APIRateLimitEndpoint)
 	if err != nil {
 		return nil, err
 	}

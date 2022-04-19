@@ -48,8 +48,8 @@ type Client struct {
 	RateLimit RateLimit
 }
 
-// baseRequests sends GET requests and uses access token when available to increase rate limits.
-func (c *Client) baseRequests(ctx context.Context, path string) (*http.Response, error) {
+// getRequest sends GET request and uses access token when available to increase rate limits.
+func (c *Client) getRequest(ctx context.Context, path string) (*http.Response, error) {
 	url := fmt.Sprintf("%s%s", c.baseURL, path)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {

@@ -28,7 +28,7 @@ func (c *Client) User(ctx context.Context, username string) (*ghsearch.User, err
 
 func (c *Client) fetchUser(ctx context.Context, username string) (*ghsearch.User, error) {
 	url := fmt.Sprintf("%s/%s", APIUserEndpoint, username)
-	resp, err := c.baseRequests(ctx, url)
+	resp, err := c.getRequest(ctx, url)
 	if err != nil {
 		if os.IsTimeout(err) {
 			return nil, ghsearch.ErrUserSourceTimeout
