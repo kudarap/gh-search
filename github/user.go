@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/kudarap/ghsearch"
 )
 
-// UserResponse represents github user data.
-type UserResponse ghsearch.User
+const requestGroupKeyExpr = time.Second * 2
 
 // User returns Github user details by username.
 func (c *Client) User(ctx context.Context, username string) (*ghsearch.User, error) {
@@ -18,20 +18,23 @@ func (c *Client) User(ctx context.Context, username string) (*ghsearch.User, err
 		return nil, err
 	}
 
-	v, err, _ := c.requestGroup.Do("username", func() (interface{}, error) {
-		// TODO invalidate cache
+	// avoid duplicate inflight requests.
+	v, err, _ := c.requestGroup.Do(username, func() (interface{}, error) {
+		// invalidates share result after requestGroupKeyExpr.
+		go func() {
+			time.Sleep(requestGroupKeyExpr)
+			c.requestGroup.Forget(username)
+		}()
 		return c.fetchUser(ctx, username)
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	ur := v.(*UserResponse)
-	u := ghsearch.User(*ur)
-	return &u, nil
+	return v.(*ghsearch.User), nil
 }
 
-func (c *Client) fetchUser(ctx context.Context, username string) (*UserResponse, error) {
+func (c *Client) fetchUser(ctx context.Context, username string) (*ghsearch.User, error) {
 	url := fmt.Sprintf("%s/%s", APIUserEndpoint, username)
 	resp, err := c.baseRequests(ctx, url)
 	if err != nil {
@@ -50,9 +53,9 @@ func (c *Client) fetchUser(ctx context.Context, username string) (*UserResponse,
 	// TODO: not concurrent safe
 	c.RateLimit = rateLimitFrom(resp.Header)
 
-	var ur UserResponse
-	if err = decodeBody(resp, &ur); err != nil {
+	var u ghsearch.User
+	if err = decodeBody(resp, &u); err != nil {
 		return nil, err
 	}
-	return &ur, err
+	return &u, err
 }

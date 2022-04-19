@@ -18,7 +18,7 @@ var (
 
 const (
 	APIBaseURL           = "https://api.github.com"
-	APIUserEndpoint      = "/user"
+	APIUserEndpoint      = "/users"
 	APIRateLimitEndpoint = "/rate_limit"
 
 	DefaultTimeout = 2 * time.Second
