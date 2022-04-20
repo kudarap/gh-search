@@ -16,7 +16,7 @@ type SourceError struct {
 }
 
 func (e SourceError) Error() string {
-	return e.Error()
+	return e.Err.Error()
 }
 
 // NewSourceError returns an error a new SourceError contains error details.
