@@ -1,0 +1,134 @@
+Github User Search
+
+- Architecture
+	- make it simple
+	- include web for ui
+	- what kind of project should be obvious on root level
+	- services should be nicely wrapped with middlewares for
+		- logging
+		- tracing
+- Clarity of README
+	- include requirements version like
+		- go version
+		- redis verion
+	- indicate local and production setup
+	- will it be ready to share with others?
+- Correctness
+	- does the requirements met?
+		- 
+- Code quality
+	- easy to find where to look
+	- well documented
+	- biz login should not have extern deps
+- Security
+	- config files should be somewhere else
+	- leave a sample config
+	- input sanitation
+- Testing
+	- test biz logic
+	- test github package
+- Technical choices
+	- 
+- Scalability
+	- we could save cache on mem for demo 
+	- but we can use redis for caching on scale
+	- load testing
+		- vegeta attack
+- Production-readiness
+	- errors and timeout should be handled well on server and on external dep
+	- setup github actions for bulding and deploying code
+	- follow gitflow
+
+- what can I add?
+	- use their own api keys for more rate limit
+	- handling its own quota for rate limit
+	- nocache flag
+	- basic ui
+	- transport layer caching
+	- cancellable request
+	- return request id
+	- integration test
+
+- questions
+	- can GH API support multiple requests
+		- no
+	- where to throw logging
+		- just on stdout
+	- where to throw metrics
+		- no metrics for now
+	- should return error info if some of the call breaks?
+		- not right now
+	- should retry?
+
+- handling extreme cases on public internet
+	- multiple repeating requests
+		- golang.org/x/sync/singleflight
+	- multiple repeating requests from same hosts // SIEGE!
+	- too many request, its now timing out
+	- github server not responding or having an outage
+	- repeating inputs
+
+- execution plan
+	- usersearch serivce tdd style
+		- should be concurrent / semaphore
+	- github implementation for usersource
+	- redis implementation for usercaching
+	- transport http
+		- logging
+		- metrics
+	- implement logging
+	- optional implement metrics
+	- dockerize
+	- CICD
+	- perform code review
+
+- concurrent api requests
+	- semaphore pattern
+	- handle err groups
+
+- NOTES
+	- place in-app limit on server layer
+	- config timeout
+	- json input, output, and error
+	- get rate limit on headers from GH
+	- error handling
+	- separate environment
+	- server timeouts
+	- timeout choices
+		- simple but will interupt read from body
+		- or manual context cancelation
+		- exponential back off and retry
+	- rate limmit can be pre-determined on github client initialization
+
+- data story line
+	- client request
+	- http server
+	- rest transport
+	- service
+	- cache
+	- gihub
+
+-----
+
+Observation
+- seem simple at first glance but if you about resiliency and scaling it now can be complicated
+
+Design Checkpoints
+o testing user search service
+o testing github implementation
+o testing github with cache
+o testing deduplication of in-flight requests
+o testing timeout and error handling
+o load testing // vegeta attack
+
+System Checkpoints
+- Dockerized
+- Github actions
+- deployed
+
+-------
+
+TRADE OFFs
+- Inflight rate limit check for concurrent requests will same rate limit readings - not atomic
+    - how about context?
+- internal github queue
