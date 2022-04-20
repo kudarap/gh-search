@@ -16,6 +16,7 @@ var (
 	ErrUserNotFound = errors.New("user not found")
 )
 
+// MaxUsersInputLength represents allowed maximum number of username input.
 const MaxUsersInputLength = 10
 
 // User represents a user details.

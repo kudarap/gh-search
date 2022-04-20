@@ -11,10 +11,6 @@ import (
 
 // User returns Github user details by username.
 func (c *Client) User(ctx context.Context, username string) (*ghsearch.User, error) {
-	if err := c.RateLimit.check(); err != nil {
-		return nil, err
-	}
-
 	// avoid duplicate inflight requests.
 	v, err, _ := c.requestGroup.Do(username, func() (interface{}, error) {
 		return c.fetchUser(ctx, username)
@@ -27,6 +23,10 @@ func (c *Client) User(ctx context.Context, username string) (*ghsearch.User, err
 }
 
 func (c *Client) fetchUser(ctx context.Context, username string) (*ghsearch.User, error) {
+	if err := c.RateLimit.consume(); err != nil {
+		return nil, err
+	}
+
 	url := fmt.Sprintf("%s/%s", APIUserEndpoint, username)
 	resp, err := c.getRequest(ctx, url)
 	if err != nil {
@@ -35,7 +35,7 @@ func (c *Client) fetchUser(ctx context.Context, username string) (*ghsearch.User
 		}
 		return nil, err
 	}
-	c.RateLimit = rateLimitFrom(resp.Header)
+	c.RateLimit.updateFrom(resp.Header)
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, ghsearch.ErrUserNotFound
 	}
