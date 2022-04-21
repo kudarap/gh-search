@@ -81,11 +81,8 @@ type Config struct {
 }
 
 func (c *Config) loadFromEnv() error {
-	// Loads env vars from .env file.
-	err := godotenv.Load()
-	if err != nil {
-		return err
-	}
+	// Optional loading .env file
+	_ = godotenv.Load()
 
 	c.Addr = os.Getenv("ADDR")
 	c.RedisURL = os.Getenv("REDIS_URL")

@@ -2,15 +2,13 @@ package redis
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	jsoniter "github.com/json-iterator/go"
 )
 
 const keyPrefix = "gh-search-"
-
-var json = jsoniter.ConfigFastest
 
 // Client represents Redis database client.
 type Client struct {
