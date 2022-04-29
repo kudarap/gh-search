@@ -40,7 +40,3 @@ Since we are dealing with external resource, its important to know how we can wo
 - tracing and metrics
 - automatic deployment
 - more unit tests
-
-
-## Proud Code
-https://bitbucket.org/javinc/tasio
