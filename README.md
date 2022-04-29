@@ -35,11 +35,11 @@ Since we are dealing with external resource, its important to know how we can wo
 
 ## Future Plan
 - integration test
-- stress test
+- load/stress test
 - server level rate limit
 - tracing and metrics
 - automatic deployment
-- more unit test
+- more unit tests
 
 
 ## Proud Code
